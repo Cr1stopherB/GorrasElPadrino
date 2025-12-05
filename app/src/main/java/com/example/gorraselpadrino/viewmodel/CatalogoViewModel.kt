@@ -1,35 +1,78 @@
 package com.example.gorraselpadrino.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.example.gorraselpadrino.model.Gorra
-import com.example.gorraselpadrino.model.CategoriaGorra
+import androidx.lifecycle.viewModelScope
+import com.example.gorraselpadrino.model.Medicamento
+import com.example.gorraselpadrino.repository.MedicamentoRepository
+import kotlinx.coroutines.launch
 
+/**
+ * ViewModel para el catálogo de medicamentos Maneja el estado de carga, errores y la lista de
+ * medicamentos
+ */
 class CatalogoViewModel : ViewModel() {
-    var gorras = mutableStateListOf<Gorra>()
+    // Repositorio para obtener datos de la API
+    private val repository = MedicamentoRepository()
+
+    // Lista mutable de medicamentos
+    var medicamentos = mutableStateListOf<Medicamento>()
+        private set
+
+    // Estado de carga
+    var isLoading = mutableStateOf(false)
+        private set
+
+    // Mensaje de error si ocurre algún problema
+    var errorMessage = mutableStateOf<String?>(null)
         private set
 
     init {
-        gorras.addAll(
-            listOf(
-                Gorra(1, "New Era 59Fifty", 49990.0, "Gorra ajustable de calidad premium", CategoriaGorra.DEPORTIVA),
-                Gorra(2, "Nike Heritage", 34990.0, "Gorra deportiva con tecnología Dri-FIT", CategoriaGorra.DEPORTIVA),
-                Gorra(3, "Adidas Originals", 29990.0, "Gorra casual con logo clásico", CategoriaGorra.CASUAL),
-                Gorra(4, "Puma Classic", 27990.0, "Gorra urbana estilo retro", CategoriaGorra.CASUAL),
-                Gorra(5, "Stetson Premier", 89990.0, "Gorra elegante de lana fina", CategoriaGorra.ELEGANTE),
-                Gorra(6, "Borsalino", 75990.0, "Gorra formal de alta costura", CategoriaGorra.ELEGANTE),
-                Gorra(7, "Carhartt Acrylic", 38990.0, "Gorra unisex de trabajo resistente", CategoriaGorra.UNISEX),
-                Gorra(8, "The North Face", 42990.0, "Gorra outdoor para todas las actividades", CategoriaGorra.UNISEX)
-            )
-        )
+        // Cargar medicamentos al inicializar el ViewModel
+        loadMedicamentos()
     }
 
-    fun addGorra(gorra: Gorra) { gorras.add(gorra) }
-    fun removeGorra(gorra: Gorra) { gorras.remove(gorra) }
-    fun updateGorra(gorraActualizada: Gorra) {
-        val indice = gorras.indexOfFirst { it.id == gorraActualizada.id }
+    /** Carga los medicamentos desde la API de eFarmaPlus */
+    fun loadMedicamentos() {
+        viewModelScope.launch {
+            isLoading.value = true
+            errorMessage.value = null
+
+            try {
+                val listaMedicamentos = repository.getMedicamentos()
+                medicamentos.clear()
+                medicamentos.addAll(listaMedicamentos)
+
+                if (listaMedicamentos.isEmpty()) {
+                    errorMessage.value = "No se encontraron medicamentos"
+                }
+            } catch (e: Exception) {
+                // Imprimir el error completo en Logcat para diagnóstico
+                Log.e("CatalogoViewModel", "Error al cargar medicamentos", e)
+                errorMessage.value = "Error al cargar medicamentos: ${e.message}"
+            } finally {
+                isLoading.value = false
+            }
+        }
+    }
+
+    /** Agrega un medicamento a la lista (para funcionalidad futura de admin) */
+    fun addMedicamento(medicamento: Medicamento) {
+        medicamentos.add(medicamento)
+    }
+
+    /** Remueve un medicamento de la lista (para funcionalidad futura de admin) */
+    fun removeMedicamento(medicamento: Medicamento) {
+        medicamentos.remove(medicamento)
+    }
+
+    /** Actualiza un medicamento existente (para funcionalidad futura de admin) */
+    fun updateMedicamento(medicamentoActualizado: Medicamento) {
+        val indice = medicamentos.indexOfFirst { it.id == medicamentoActualizado.id }
         if (indice >= 0) {
-            gorras[indice] = gorraActualizada
+            medicamentos[indice] = medicamentoActualizado
         }
     }
 }

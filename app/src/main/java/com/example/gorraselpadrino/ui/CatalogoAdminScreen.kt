@@ -1,158 +1,271 @@
 package com.example.gorraselpadrino.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import com.example.gorraselpadrino.model.Medicamento
 import com.example.gorraselpadrino.viewmodel.CatalogoViewModel
-import com.example.gorraselpadrino.model.Gorra
-import com.example.gorraselpadrino.model.CategoriaGorra
 
+/**
+ * Pantalla de administración del catálogo de medicamentos.
+ * Muestra los productos en un Grid similar al catálogo de usuarios,
+ * pero con opciones para editar y eliminar.
+ */
 @Composable
-fun CatalogoAdminScreen(
-    navController: NavController,
-    catalogViewModel: CatalogoViewModel
-) {
-    var resultado by remember { mutableStateOf("") }
+fun CatalogoAdminScreen(navController: NavController, catalogViewModel: CatalogoViewModel) {
     var showEditDialog by remember { mutableStateOf(false) }
-    var editGorra by remember { mutableStateOf<Gorra?>(null) }
+    var editMedicamento by remember { mutableStateOf<Medicamento?>(null) }
+
+    // Estados para el formulario de edición
     var nombre by remember { mutableStateOf("") }
     var precio by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
-    var categoria by remember { mutableStateOf(CategoriaGorra.CASUAL) }
-    var expanded by remember { mutableStateOf(false) }
-    val scrollState = rememberScrollState()
+    var laboratorio by remember { mutableStateOf("") }
+    var categoria by remember { mutableStateOf("") }
+    var requiereReceta by remember { mutableStateOf(false) }
+    
+    var resultado by remember { mutableStateOf("") }
 
-    fun limpiarCampos() {
-        nombre = ""
-        precio = ""
-        descripcion = ""
-        categoria = CategoriaGorra.CASUAL
-        editGorra = null
+    // Funciones auxiliares para el diálogo
+    fun openEdit(medicamento: Medicamento) {
+        editMedicamento = medicamento
+        nombre = medicamento.nombre
+        precio = medicamento.precio.toString()
+        descripcion = medicamento.descripcion
+        laboratorio = medicamento.laboratorio
+        categoria = medicamento.categoria
+        requiereReceta = medicamento.requiereReceta
+        showEditDialog = true
+        resultado = ""
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-            .padding(32.dp),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("Catálogo de gorras (ADMIN)", style = MaterialTheme.typography.titleLarge)
-        Spacer(Modifier.height(16.dp))
+    fun closeEdit() {
+        showEditDialog = false
+        editMedicamento = null
+        resultado = ""
+    }
 
-        catalogViewModel.gorras.forEach { gorra ->
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text("${gorra.nombre} (ID: ${gorra.id})", style = MaterialTheme.typography.bodyLarge)
-                    Text("Precio: ${gorra.precio} | ${gorra.categoria.name}", style = MaterialTheme.typography.bodySmall)
-                    Text(gorra.descripcion, style = MaterialTheme.typography.bodySmall)
-                }
-                Column(
-                    modifier = Modifier.widthIn(min = 120.dp).fillMaxHeight(),
-                    horizontalAlignment = Alignment.End,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Button(
-                        onClick = {
-                            editGorra = gorra
-                            nombre = gorra.nombre
-                            precio = gorra.precio.toString()
-                            descripcion = gorra.descripcion
-                            categoria = gorra.categoria
-                            showEditDialog = true
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) { Text("Modificar") }
-                    Button(
-                        onClick = {
-                            catalogViewModel.removeGorra(gorra)
-                            resultado = "Gorra eliminada"
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-                        modifier = Modifier.fillMaxWidth()
-                    ) { Text("Eliminar") }
-                }
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Barra superior
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Button(onClick = { navController.popBackStack() }) {
+                Text("Volver")
             }
-            Divider()
+            Text(
+                "Gestionar Catálogo",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.width(48.dp)) // Espaciador para equilibrar el título
         }
+
+        Divider()
 
         if (resultado.isNotEmpty()) {
-            Spacer(Modifier.height(10.dp))
-            Text(resultado, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = resultado,
+                modifier = Modifier.padding(16.dp),
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold
+            )
         }
 
-        Spacer(Modifier.height(24.dp))
-        Button(
-            onClick = { navController.navigate("admin") { popUpTo(0) { inclusive = true } } },
-            modifier = Modifier.fillMaxWidth()
-        ) { Text("Volver") }
+        if (catalogViewModel.medicamentos.isEmpty()) {
+             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                     Text("No hay productos cargados.")
+                     Button(onClick = { catalogViewModel.loadMedicamentos() }) {
+                         Text("Recargar")
+                     }
+                 }
+             }
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = Modifier.fillMaxSize().padding(8.dp),
+                contentPadding = PaddingValues(bottom = 16.dp)
+            ) {
+                items(catalogViewModel.medicamentos) { medicamento ->
+                    AdminMedicamentoCard(
+                        medicamento = medicamento,
+                        onEditClick = { openEdit(medicamento) },
+                        onDeleteClick = { 
+                            catalogViewModel.removeMedicamento(medicamento)
+                            resultado = "Producto eliminado correctamente"
+                        }
+                    )
+                }
+            }
+        }
     }
 
-    if (showEditDialog && editGorra != null) {
-        AlertDialog(
-            onDismissRequest = { showEditDialog = false; limpiarCampos() },
+    // Diálogo de Edición
+    if (showEditDialog && editMedicamento != null) {
+         AlertDialog(
+            onDismissRequest = { closeEdit() },
+            title = { Text("Editar Producto") },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .verticalScroll(rememberScrollState())
+                        .fillMaxWidth()
+                ) {
+                     OutlinedTextField(
+                         value = nombre, 
+                         onValueChange = { nombre = it }, 
+                         label = { Text("Nombre") },
+                         modifier = Modifier.fillMaxWidth()
+                     )
+                     Spacer(Modifier.height(8.dp))
+                     OutlinedTextField(
+                         value = precio, 
+                         onValueChange = { precio = it }, 
+                         label = { Text("Precio") },
+                         modifier = Modifier.fillMaxWidth()
+                     )
+                     Spacer(Modifier.height(8.dp))
+                     OutlinedTextField(
+                         value = descripcion, 
+                         onValueChange = { descripcion = it }, 
+                         label = { Text("Descripción") },
+                         modifier = Modifier.fillMaxWidth()
+                     )
+                     Spacer(Modifier.height(8.dp))
+                     OutlinedTextField(
+                         value = laboratorio, 
+                         onValueChange = { laboratorio = it }, 
+                         label = { Text("Laboratorio") },
+                         modifier = Modifier.fillMaxWidth()
+                     )
+                     Spacer(Modifier.height(8.dp))
+                     OutlinedTextField(
+                         value = categoria, 
+                         onValueChange = { categoria = it }, 
+                         label = { Text("Categoría") },
+                         modifier = Modifier.fillMaxWidth()
+                     )
+                     Spacer(Modifier.height(8.dp))
+                     Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = requiereReceta, onCheckedChange = { requiereReceta = it })
+                        Text("Requiere Receta")
+                     }
+                }
+            },
             confirmButton = {
                 Button(onClick = {
-                    val nombreValido = nombre.isNotBlank()
-                    val descripcionValida = descripcion.isNotBlank()
-                    val precioValido = precio.toDoubleOrNull()?.let { it > 0 } ?: false
-                    val existe = catalogViewModel.gorras.any {
-                        it.id != editGorra!!.id && it.nombre.equals(nombre, ignoreCase = true)
-                    }
-                    if (!nombreValido || !descripcionValida || !precioValido) {
-                        resultado = "Campos obligatorios faltantes o inválidos"
-                    } else if (existe) {
-                        resultado = "Ya existe otra gorra con ese nombre"
-                    } else {
-                        catalogViewModel.updateGorra(
-                            Gorra(editGorra!!.id, nombre, precio.toDouble(), descripcion, categoria)
-                        )
-                        resultado = "Gorra modificada"
-                        showEditDialog = false
-                        limpiarCampos()
-                    }
-                }) { Text("Guardar") }
+                     val item = editMedicamento!!
+                     val nuevo = item.copy(
+                        nombre = nombre,
+                        precio = precio.toDoubleOrNull() ?: item.precio,
+                        descripcion = descripcion,
+                        laboratorio = laboratorio,
+                        categoria = categoria,
+                        requiereReceta = requiereReceta
+                     )
+                     catalogViewModel.updateMedicamento(nuevo)
+                     resultado = "Producto actualizado correctamente"
+                     closeEdit()
+                }) {
+                    Text("Guardar")
+                }
             },
             dismissButton = {
-                Button(onClick = { showEditDialog = false; limpiarCampos() }) { Text("Cancelar") }
-            },
-            title = { Text("Modificar gorra") },
-            text = {
-                Column {
-                    OutlinedTextField(value = nombre, onValueChange = { nombre = it }, label = { Text("Nombre") })
-                    Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = precio,
-                        onValueChange = { precio = it.filter { c -> c.isDigit() || c == '.' } },
-                        label = { Text("Precio") }
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(value = descripcion, onValueChange = { descripcion = it }, label = { Text("Descripción") })
-                    Spacer(Modifier.height(8.dp))
-                    Box {
-                        OutlinedButton(onClick = { expanded = true }) { Text(categoria.name) }
-                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                            CategoriaGorra.values().forEach { cat ->
-                                DropdownMenuItem(
-                                    onClick = { categoria = cat; expanded = false },
-                                    text = { Text(cat.name) }
-                                )
-                            }
-                        }
+                Button(onClick = { closeEdit() }) { Text("Cancelar") }
+            }
+         )
+    }
+}
+
+@Composable
+fun AdminMedicamentoCard(
+    medicamento: Medicamento,
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .padding(4.dp)
+            .fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column {
+            // Imagen
+             AsyncImage(
+                model = medicamento.imagenUrl,
+                contentDescription = medicamento.nombre,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)),
+                contentScale = ContentScale.Crop
+            )
+            
+            Column(modifier = Modifier.padding(8.dp)) {
+                Text(
+                    text = medicamento.nombre,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                
+                Text(
+                    text = "$${medicamento.precio}",
+                    color = Color(0xFF4CAF50),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // Botones de acción
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    IconButton(onClick = onEditClick) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Editar",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    IconButton(onClick = onDeleteClick) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Eliminar",
+                            tint = MaterialTheme.colorScheme.error
+                        )
                     }
                 }
             }
-        )
+        }
     }
 }

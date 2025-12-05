@@ -23,15 +23,52 @@ fun HomeAdminScreen(
     ) {
         Text("Panel de Administrador", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(24.dp))
+        
+        Text("Resumen del Negocio", style = MaterialTheme.typography.titleMedium)
+        Card(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("Ventas Hoy: $150.00")
+                Text("Pedidos Pendientes: 5")
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             onClick = { navController.navigate("catalogoAdmin") },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Gestionar Catálogo")
+            Text("Gestionar Productos")
+        }
+        
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(
+            onClick = { navController.navigate("adminOrders") },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Gestionar Pedidos")
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(
+            onClick = { navController.navigate("adminUsers") },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Gestionar Usuarios")
+        }
+        
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(
+            onClick = { navController.navigate("adminCategories") },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Gestionar Categorías")
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
 
         Button(
             onClick = {
@@ -39,9 +76,10 @@ fun HomeAdminScreen(
                     popUpTo(0) { inclusive = true }
                 }
             },
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Volver al Inicio")
+            Text("Volver al Inicio (Modo Usuario)")
         }
     }
 }

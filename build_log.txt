@@ -1,0 +1,89 @@
+﻿.\gradlew : WARNING: 
+A restricted method 
+in java.lang.System 
+has been called
+En línea: 1 
+Carácter: 1
++ .\gradlew 
+assembleDebug 
+--console=plain 2>&1 
+| Out-File -FilePath 
+"bu ...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (WARNING   
+ : A rest...has b    
+een called:Strin    
+g) [], RemoteExc    
+eption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+WARNING: java.lang.Sy
+stem::load has been 
+called by net.rubygra
+pefruit.platform.inte
+rnal.NativeLibraryLoa
+der in an unnamed 
+module (file:/C:/User
+s/crist/.gradle/wrapp
+er/dists/gradle-8.13-
+bin/5xuhj0ry160q40clu
+lazy9h7d/gradle-8.13/
+lib/native-platform-0
+.22-milestone-28.jar)
+WARNING: Use --enable
+-native-access=ALL-UN
+NAMED to avoid a 
+warning for callers 
+in this module
+WARNING: Restricted 
+methods will be 
+blocked in a future 
+release unless 
+native access is 
+enabled
+
+
+FAILURE: Build 
+failed with an 
+exception.
+
+* What went wrong:
+Could not determine 
+the dependencies of 
+task ':app:compileDeb
+ugJavaWithJavac'.
+> SDK location not 
+found. Define a 
+valid SDK location 
+with an ANDROID_HOME 
+environment variable 
+or by setting the 
+sdk.dir path in your 
+project's local 
+properties file at 'C
+:\Users\crist\Documen
+ts\Proyectos\GorrasEl
+Padrino\local.propert
+ies'.
+
+* Try:
+> Run with 
+--stacktrace option 
+to get the stack 
+trace.
+> Run with --info or 
+--debug option to 
+get more log output.
+> Run with --scan to 
+get full insights.
+> Get more help at ht
+tps://help.gradle.org
+.
+
+BUILD FAILED in 1s

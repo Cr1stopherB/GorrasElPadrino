@@ -5,7 +5,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -16,7 +15,6 @@ fun LoginScreen(navController: NavController, userAdminViewModel: UserAdminViewM
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var showError by remember { mutableStateOf(false) }
-    //val keyboardController = LocalSoftwareKeyboardController.current
 
     fun intentarLogin() {
         showError = false
@@ -33,7 +31,6 @@ fun LoginScreen(navController: NavController, userAdminViewModel: UserAdminViewM
         } else {
             showError = true
         }
-        //keyboardController?.hide()
     }
 
     Column(
@@ -75,6 +72,16 @@ fun LoginScreen(navController: NavController, userAdminViewModel: UserAdminViewM
         if (showError) {
             Spacer(modifier = Modifier.height(10.dp))
             Text("Usuario o contraseña incorrectos", color = MaterialTheme.colorScheme.error)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextButton(onClick = { navController.navigate("register") }) {
+            Text("¿No tienes cuenta? Regístrate")
+        }
+
+        TextButton(onClick = { navController.navigate("recoverPassword") }) {
+            Text("Olvidé mi contraseña")
         }
     }
 }
