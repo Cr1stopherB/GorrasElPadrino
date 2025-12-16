@@ -58,21 +58,68 @@ class CatalogoViewModel : ViewModel() {
         }
     }
 
-    /** Agrega un medicamento a la lista (para funcionalidad futura de admin) */
+    /** Agrega un medicamento a la API y actualiza la lista local */
     fun addMedicamento(medicamento: Medicamento) {
-        medicamentos.add(medicamento)
+        viewModelScope.launch {
+            isLoading.value = true
+            try {
+                val nuevoMedicamento = repository.addMedicamento(medicamento)
+                if (nuevoMedicamento != null) {
+                    medicamentos.add(nuevoMedicamento)
+                    // Recargar lista completa para asegurar sincronía
+                    loadMedicamentos() 
+                } else {
+                    errorMessage.value = "Error al crear el medicamento"
+                }
+            } catch (e: Exception) {
+                Log.e("CatalogoViewModel", "Error al agregar medicamento", e)
+                errorMessage.value = "Error al agregar medicamento: ${e.message}"
+            } finally {
+                isLoading.value = false
+            }
+        }
     }
 
-    /** Remueve un medicamento de la lista (para funcionalidad futura de admin) */
+    /** Remueve un medicamento de la API y actualiza la lista local */
     fun removeMedicamento(medicamento: Medicamento) {
-        medicamentos.remove(medicamento)
+        viewModelScope.launch {
+            isLoading.value = true
+            try {
+                val success = repository.deleteMedicamento(medicamento.id)
+                if (success) {
+                    medicamentos.remove(medicamento)
+                } else {
+                    errorMessage.value = "Error al eliminar el medicamento"
+                }
+            } catch (e: Exception) {
+                Log.e("CatalogoViewModel", "Error al eliminar medicamento", e)
+                errorMessage.value = "Error al eliminar medicamento: ${e.message}"
+            } finally {
+                isLoading.value = false
+            }
+        }
     }
 
-    /** Actualiza un medicamento existente (para funcionalidad futura de admin) */
+    /** Actualiza un medicamento en la API y refresca la lista local */
     fun updateMedicamento(medicamentoActualizado: Medicamento) {
-        val indice = medicamentos.indexOfFirst { it.id == medicamentoActualizado.id }
-        if (indice >= 0) {
-            medicamentos[indice] = medicamentoActualizado
+        viewModelScope.launch {
+            isLoading.value = true
+            try {
+                val actualizado = repository.updateMedicamento(medicamentoActualizado)
+                if (actualizado != null) {
+                    val indice = medicamentos.indexOfFirst { it.id == medicamentoActualizado.id }
+                    if (indice >= 0) {
+                        medicamentos[indice] = actualizado
+                    }
+                } else {
+                    errorMessage.value = "Error al actualizar el medicamento"
+                }
+            } catch (e: Exception) {
+                Log.e("CatalogoViewModel", "Error al actualizar medicamento", e)
+                errorMessage.value = "Error al actualizar medicamento: ${e.message}"
+            } finally {
+                isLoading.value = false
+            }
         }
     }
 }

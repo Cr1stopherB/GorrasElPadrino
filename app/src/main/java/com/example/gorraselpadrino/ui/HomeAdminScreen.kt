@@ -47,7 +47,7 @@ fun HomeAdminScreen(
             onClick = { navController.navigate("adminOrders") },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Gestionar Pedidos")
+            Text("Ver Pedidos")
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -59,14 +59,7 @@ fun HomeAdminScreen(
             Text("Gestionar Usuarios")
         }
         
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Button(
-            onClick = { navController.navigate("adminCategories") },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Gestionar Categorías")
-        }
+        // Se eliminó el botón de Gestionar Categorías
 
         Spacer(modifier = Modifier.height(24.dp))
 

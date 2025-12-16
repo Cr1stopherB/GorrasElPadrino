@@ -8,6 +8,7 @@ import androidx.navigation.navArgument
 import com.example.gorraselpadrino.viewmodel.CartViewModel
 import com.example.gorraselpadrino.viewmodel.CatalogoViewModel
 import com.example.gorraselpadrino.viewmodel.UserAdminViewModel
+import com.example.gorraselpadrino.viewmodel.AdminOrdersViewModel
 
 /** Función de navegación principal de la aplicación Define todas las rutas y pantallas de la app */
 @Composable
@@ -15,6 +16,7 @@ fun GorrasElPadrinoNavegacion(userAdminViewModel: UserAdminViewModel) {
     val navController = rememberNavController()
     val cartViewModel: CartViewModel = viewModel()
     val catalogoViewModel: CatalogoViewModel = viewModel()
+    val adminOrdersViewModel: AdminOrdersViewModel = viewModel()
 
     NavHost(navController = navController, startDestination = "login") {
         // Login & Auth
@@ -54,7 +56,9 @@ fun GorrasElPadrinoNavegacion(userAdminViewModel: UserAdminViewModel) {
         composable("catalogoAdmin") {
             CatalogoAdminScreen(navController = navController, catalogViewModel = catalogoViewModel)
         }
-        composable("adminOrders") { AdminOrdersScreen(navController) }
+        composable("adminOrders") { 
+            AdminOrdersScreen(navController, adminOrdersViewModel) 
+        }
         composable("adminUsers") { AdminUsersScreen(navController) }
         composable("adminCategories") { AdminCategoriesScreen(navController) }
     }
